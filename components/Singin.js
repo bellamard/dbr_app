@@ -23,8 +23,11 @@ const Singin = ({navigation}) => {
   const [passwordConfirme, setPasswordConfirme] = useState('');
   const [mail, setMail] = useState('');
   const [code, setCode] = useState('');
+  const [confirmed, setConfirmed] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [messagError, setMessagError] = useState('');
+  const [messageModal, setMessageModal] = useState('');
   const myModal = () => {
     return (
       <Modal
@@ -43,18 +46,98 @@ const Singin = ({navigation}) => {
             <TextInput
               placeholder="Code de confirmation"
               value={code}
-              onChangeText={() => setCode}
+              onChangeText={setCode}
               style={Styles.input}
+              keyboardType="numeric"
             />
-            <TouchableOpacity onPress={() => {}} style={Styles.buttonAcceder}>
+            <TouchableOpacity
+              onPress={() => {
+                confirmationCode();
+              }}
+              style={Styles.buttonAcceder}>
               <Text style={Styles.buttonTitle}>Confirmer</Text>
             </TouchableOpacity>
+            <Text style={Styles.error}>{isError ? messageModal : null}</Text>
           </View>
         </View>
       </Modal>
     );
   };
-  const getconnexion = () => {};
+  const getSingin = () => {
+    setIsLoading(true);
+    const url = 'http://localhost:3000/api/connexion';
+
+    if (names !== '' && mail !== '') {
+      if (phone.length === 9) {
+        if (
+          password !== '' &&
+          password.length >= 6 &&
+          passwordConfirme !== '' &&
+          password === passwordConfirme
+        ) {
+          axios
+            .post(url, {
+              names,
+              phone,
+              password,
+              mail,
+            })
+            .then(data => {
+              setIsLoading(false);
+              const {idCode, names} = data;
+              setConfirmed(idCode);
+              setModalVisible(true);
+            })
+            .catch(error => {
+              setIsLoading(false);
+              setMessagError(error);
+              setIsError(true);
+            });
+        } else {
+          setPassword('');
+          setPasswordConfirme('');
+          setMessagError('Mot de passe incorrect');
+          setIsLoading(false);
+          setIsError(true);
+        }
+      } else {
+        setPhone('');
+        setMessagError('numéro de téléphone incorrect');
+        setIsLoading(false);
+        setIsError(true);
+      }
+    } else {
+      setNames('');
+      setPhone('');
+      setMail('');
+      setPassword('');
+      setPasswordConfirme('');
+      setMessagError('le nom ou le mail est incorrect');
+      setIsLoading(false);
+      setIsError(true);
+    }
+  };
+  const confirmationCode = () => {
+    setIsLoading(true);
+    setModalVisible(false);
+    if (code === confirmed) {
+      const url = 'http://localhost:3000/api/confirmation';
+      axios
+        .post(url, {code})
+        .then(data => {
+          const {_name, _phone} = data;
+          navigation.push('Login', {_name, _phone});
+        })
+        .catch(error => {
+          setMessageModal(error);
+          setIsLoading(false);
+        });
+    } else {
+      setMessageModal('Code incorrect');
+      setModalVisible(!modalVisible);
+    }
+  };
+
   return (
     <ImageBackground source={back} style={Styles.container}>
       {myModal()}
@@ -104,9 +187,14 @@ const Singin = ({navigation}) => {
               <TouchableOpacity onPress={() => {}} style={Styles.condition}>
                 <Text style={{color: 'blue'}}>condition d'utlisation</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => {}} style={Styles.buttonAcceder}>
+              <TouchableOpacity
+                onPress={() => {
+                  getSingin();
+                }}
+                style={Styles.buttonAcceder}>
                 <Text style={Styles.buttonTitle}>J'ACCEPTER</Text>
               </TouchableOpacity>
+              <Text style={Styles.error}>{isError ? messagError : null}</Text>
             </View>
           )}
         </View>

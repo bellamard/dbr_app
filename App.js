@@ -13,6 +13,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Launch from './components/Launch';
 import Singin from './components/Singin';
 import Login from './components/Login';
+import Dashboard from './components/dashboard';
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +21,11 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
+        <Stack.Screen
+          name="Dashboard"
+          component={Dashboard}
+          options={{headerShown: false}}
+        />
         <Stack.Screen
           name="Launch"
           component={Launch}
