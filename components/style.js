@@ -11,12 +11,13 @@ const Styles = StyleSheet.create({
   layout: {
     backgroundColor: '#fff',
     width: width - width / 8,
-    height: height - width / 2,
+    height: height - height / 8,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 14,
     borderRadius: 10,
   },
+  condition: {paddingVertical: 5},
   logos: {
     width: 120,
     height: 120,
@@ -28,9 +29,13 @@ const Styles = StyleSheet.create({
   title2: {
     fontSize: 28,
   },
+  title3: {
+    fontSize: 18,
+  },
   paragraph: {
     textAlign: 'center',
   },
+
   buttonAcceder: {
     backgroundColor: '#3399FF',
     marginVertical: 10,
@@ -66,7 +71,37 @@ const Styles = StyleSheet.create({
     color: 'red',
   },
   view: {
-    marginTop: height - height / 1.15,
+    marginVertical: height - height / 1.04,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  centeredView: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 30,
+  },
+  boxModal: {
+    backgroundColor: 'white',
+    opacity: 1,
+    borderRadius: 20,
+    width: '100%',
+    padding: 15,
   },
 });
 export default Styles;
