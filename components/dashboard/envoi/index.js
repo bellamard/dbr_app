@@ -1,5 +1,12 @@
 import React, {useState} from 'react';
-import {Text, View, Image, TextInput, TouchableOpacity} from 'react-native';
+import {
+  Text,
+  View,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+} from 'react-native';
 import Styles from './style';
 const user = require('../../../images/user.jpg');
 
@@ -8,8 +15,47 @@ const Envoi = ({navigation, route}) => {
   const [phone, setPhone] = useState('089 XXX XXX XXX') || route.params.phone;
   const [numberRecipient, setNumberRecipient] = useState('');
   const [device, setDevice] = useState('USD');
-  const [solde, setSolde] = useState('');
+  const [solde, setSolde] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
+  const [recipientName, setRecipientName] = useState('');
+  const [costs, setCosts] = useState(0);
+  const [password, setPassword] = useState('');
+  const myModal = () => {
+    return (
+      <Modal animationType="slide" transparent={true} visible={modalVisible}>
+        <View style={Styles.centeredView}>
+          <View style={Styles.modalView}>
+            <View style={Styles.boxConfirmation}>
+              <Text>Client:{username}</Text>
+              <Text>bénéficiaire:{recipientName}</Text>
+              <Text>Numéro:{numberRecipient}</Text>
+              <Text>Prix:{solde}</Text>
+              <Text>Frais:{costs}</Text>
+              <Text>Prix Total:{solde + costs}</Text>
+              <TextInput
+                placeholder="entre votre code secret"
+                style={Styles.input}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={true}
+              />
+            </View>
+            <TouchableOpacity
+              style={Styles.button}
+              onPress={() => setModalVisible(!modalVisible)}>
+              <Text style={Styles.buttonText}>Valider</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={Styles.buttonAnnuler}
+              onPress={() => setModalVisible(!modalVisible)}>
+              <Text style={Styles.buttonText}>Annuler</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   return (
     <View style={Styles.container}>
       <View style={Styles.boxUser}>
@@ -57,6 +103,7 @@ const Envoi = ({navigation, route}) => {
               <Text style={Styles.itemName}>{device}</Text>
             </View>
           </View>
+          {myModal()}
           <TouchableOpacity
             style={Styles.button}
             onPress={() => setModalVisible(!modalVisible)}>
