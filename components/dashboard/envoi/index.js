@@ -8,6 +8,7 @@ import {
   Modal,
 } from 'react-native';
 import Styles from './style';
+import axios from 'axios';
 const user = require('../../../images/user.jpg');
 
 const Envoi = ({navigation, route}) => {
