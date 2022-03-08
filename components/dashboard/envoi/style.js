@@ -43,8 +43,12 @@ const Styles = StyleSheet.create({
     color: '#000',
     marginBottom: 10,
   },
+  itemName: {
+    color: '#000',
+  },
   itemNumber: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     borderColor: '#00f',
     paddingHorizontal: 10,
@@ -58,6 +62,9 @@ const Styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 5,
     marginVertical: 5,
+  },
+  itemPrice: {
+    textAlign: 'right',
   },
   buttonText: {
     color: '#fff',
@@ -113,6 +120,25 @@ const Styles = StyleSheet.create({
   },
   boxConfirmation: {
     width: '100%',
+  },
+  devise: {
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    textAlign: 'center',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 35,
+    marginHorizontal: 2.5,
+    borderColor: '#519',
+  },
+  deviseTitle: {
+    color: '#519',
+    fontSize: 10,
+  },
+  itemDevices: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 export default Styles;
