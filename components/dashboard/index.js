@@ -42,6 +42,27 @@ const Dashboard = ({navigation, route}) => {
     return true;
   };
 
+  useEffect(() => {
+    const backAction = () => {
+      Alert.alert('Quitter', 'Êtes-vous sûr de vouloir quitter ?', [
+        {
+          text: 'Cancel',
+          onPress: () => null,
+          style: 'cancel',
+        },
+        {text: 'YES', onPress: () => BackHandler.exitApp()},
+      ]);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, []);
+
   const setViewDevices = (device, compte) => {
     setDevices(device);
     setsolde(compte);
