@@ -179,5 +179,14 @@ const Styles = StyleSheet.create({
   error: {
     color: 'red',
   },
+  imageError: {
+    width: 180,
+    height: 180,
+  },
+  boxError: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 export default Styles;

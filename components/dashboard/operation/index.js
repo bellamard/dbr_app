@@ -8,10 +8,12 @@ import {
   FlatList,
   TouchableOpacity,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import axios from 'axios';
 import Styles from './style';
 const user = require('../../../images/user.jpg');
+const errorImage = require('../../../images/logout.png');
 
 const Item = ({name, type, date}) => {
   return (
@@ -34,34 +36,60 @@ const Operation = ({navigation, route}) => {
   const [isError, setIsError] = useState(false);
   const [messageError, setMessageError] = useState('');
   const [transactions, setTransactions] = useState([
-    {
-      id: 1,
-      user: 895127236,
-      username: 'bellamard',
-      date: '2020-01-01',
-      solde: 1000,
-      type: 'retrait',
-    },
-    {
-      id: 2,
-      user: 895127246,
-      username: 'alex',
-      date: '2020-01-01',
-      solde: 1000,
-      type: 'retrait',
-    },
-    {
-      id: 3,
-      user: 895127246,
-      username: 'alex',
-      date: '2020-01-01',
-      montant: 1000,
-      type: 'retrait',
-    },
+    // {
+    //   id: 1,
+    //   user: 895127236,
+    //   username: 'bellamard',
+    //   type: 'Rétrait',
+    //   solde: 100,
+    //   device: 'USD',
+    //   date: '2020-02-08',
+    // },
+    // {
+    //   id: 2,
+    //   user: 895127236,
+    //   username: 'b2la',
+    //   type: 'Rétrait',
+    //   solde: 100,
+    //   device: 'USD',
+    //   date: '2020-02-08',
+    // },
+    // {
+    //   id: 3,
+    //   user: 895127236,
+    //   username: 'b2la',
+    //   type: 'Rétrait',
+    //   solde: 100,
+    //   device: 'USD',
+    //   date: '2020-02-08',
+    // },
+    // {
+    //   id: 4,
+    //   user: 895127236,
+    //   username: 'b2la',
+    //   type: 'Rétrait',
+    //   solde: 100,
+    //   device: 'USD',
+    //   date: '2020-02-08',
+    // },
   ]);
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
+    const receiveTransaction = () => {
+      const url = 'http://localhost:3000/api/transaction/';
+      axios
+        .post(url, {phone})
+        .then(res => {
+          setIsLoading(false);
+          setTransactions(res);
+        })
+        .catch(error => {
+          setIsLoading(false);
+          setIsError(true);
+          setMessageError('Pas des Transaction');
+        });
+    };
     const backAction = () => {
       navigation.push('Dashboard');
       return true;
@@ -71,9 +99,9 @@ const Operation = ({navigation, route}) => {
       'hardwareBackPress',
       backAction,
     );
-
+    receiveTransaction();
     return () => backHandler.remove();
-  }, [navigation]);
+  }, [navigation, phone]);
   const myModal = item => {
     return (
       <Modal animationType="slide" transparent={true} visible={modalVisible}>
@@ -82,7 +110,9 @@ const Operation = ({navigation, route}) => {
             <View style={Styles.boxConfirmation}>
               <Text style={Styles.itemtitle}>RE:{item.username}</Text>
               <Text style={Styles.itemtitle}>Phone:{item.user}</Text>
-              <Text style={Styles.itemDescription}>Montant:{item.montant}</Text>
+              <Text style={Styles.itemDescription}>
+                Montant:{item.solde} {item.device}
+              </Text>
               <Text style={Styles.itemType}>Type:{item.type}</Text>
               <Text style={Styles.itemtitle}>Date:{item.date}</Text>
             </View>
@@ -108,6 +138,23 @@ const Operation = ({navigation, route}) => {
     );
   };
 
+  const panel = () => (
+    <View>
+      <Text style={Styles.title}>Operations</Text>
+      <FlatList
+        data={transactions}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+      />
+    </View>
+  );
+  const messageView = () => (
+    <View style={Styles.boxError}>
+      <Image source={errorImage} style={Styles.imageError} />
+      <Text style={Styles.error}>{messageError}</Text>
+    </View>
+  );
+
   return (
     <View style={Styles.container}>
       <View style={Styles.boxUser}>
@@ -118,12 +165,13 @@ const Operation = ({navigation, route}) => {
         </View>
       </View>
       <View style={Styles.body}>
-        <Text style={Styles.title}>Operations</Text>
-        <FlatList
-          data={transactions}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-        />
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : isError ? (
+          messageView()
+        ) : (
+          panel()
+        )}
       </View>
     </View>
   );

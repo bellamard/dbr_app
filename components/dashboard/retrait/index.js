@@ -168,23 +168,25 @@ const Retrait = ({navigation, route}) => {
             </View>
           </View>
           {myModal()}
-          {isLoading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-          ) : (
-            <View>
-              <TouchableOpacity
-                style={Styles.button}
-                onPress={() => sendTransaction()}>
-                <Text style={Styles.buttonText}>Confirmer</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={Styles.buttonAnnuler}
-                onPress={() => navigation.push('Dashboard')}>
-                <Text style={Styles.buttonText}>Annuler</Text>
-              </TouchableOpacity>
-              <Text style={Styles.error}>{isError ? messagError : null}</Text>
-            </View>
-          )}
+          <View>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+              <View>
+                <TouchableOpacity
+                  style={Styles.button}
+                  onPress={() => sendTransaction()}>
+                  <Text style={Styles.buttonText}>Confirmer</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={Styles.buttonAnnuler}
+                  onPress={() => navigation.push('Dashboard')}>
+                  <Text style={Styles.buttonText}>Annuler</Text>
+                </TouchableOpacity>
+                <Text style={Styles.error}>{isError ? messagError : null}</Text>
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </View>
