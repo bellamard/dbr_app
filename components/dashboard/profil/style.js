@@ -188,5 +188,17 @@ const Styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  visible: {
+    width: 25,
+    height: 25,
+  },
+  inputPasswordVisibility: {
+    width: '100%',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    borderColor: '#3399FF',
+    borderBottomWidth: 1,
+    alignItems: 'center',
+  },
 });
 export default Styles;
