@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import Styles from './style';
 import axios from 'axios';
@@ -16,11 +17,14 @@ const Envoi = ({navigation, route}) => {
   const [phone, setPhone] = useState('089 XXX XXX XXX') || route.params.phone;
   const [numberRecipient, setNumberRecipient] = useState('');
   const [device, setDevice] = useState('USD');
-  const [solde, setSolde] = useState(0);
+  const [solde, setSolde] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [recipientName, setRecipientName] = useState('');
   const [costs, setCosts] = useState(0);
   const [password, setPassword] = useState('');
+  const [messagError, setMessagError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
   const myModal = () => {
     return (
       <Modal animationType="slide" transparent={true} visible={modalVisible}>
@@ -43,7 +47,7 @@ const Envoi = ({navigation, route}) => {
             </View>
             <TouchableOpacity
               style={Styles.button}
-              onPress={() => setModalVisible(!modalVisible)}>
+              onPress={() => confirmationTransaction()}>
               <Text style={Styles.buttonText}>Valider</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -51,10 +55,68 @@ const Envoi = ({navigation, route}) => {
               onPress={() => setModalVisible(!modalVisible)}>
               <Text style={Styles.buttonText}>Annuler</Text>
             </TouchableOpacity>
+            <Text style={Styles.error}>{isError ? messagError : null}</Text>
           </View>
         </View>
       </Modal>
     );
+  };
+
+  const sendTransaction = () => {
+    setIsError(false);
+    if (numberRecipient.length != 9 && solde === '') {
+      setMessagError('Veuillez remplir correctement les champs');
+      setIsError(true);
+      setSolde('');
+      setNumberRecipient('');
+    } else {
+      setIsLoading(true);
+      const url = 'http://localhost:3000/api/transaction/send';
+      axios
+        .post(url, {phone, numberRecipient, device, solde})
+        .then(res => {
+          const {_recipientName, _costs} = res;
+          setRecipientName(_recipientName);
+          setCosts(_costs);
+          setModalVisible(true);
+          setIsLoading(false);
+        })
+        .catch(err => {
+          setIsLoading(false);
+          setIsError(true);
+          setMessagError("Erreur d'Operation");
+          setSolde('');
+          setNumberRecipient('');
+          console.log(err);
+        });
+    }
+  };
+  const confirmationTransaction = () => {
+    setIsError(false);
+    if (password.length === 0) {
+      setMessagError('Veuillez remplir correctement les champs');
+      setIsError(true);
+      setPassword('');
+    } else {
+      const url = 'http://localhost:3000/api/transaction/confirm';
+      axios
+        .post(url, {phone, password, numberRecipient, device, solde, costs})
+        .then(res => {
+          navigation.push('confirmation', {
+            recipientName,
+            solde,
+            costs,
+            numberRecipient,
+          });
+          setModalVisible(false);
+        })
+        .catch(err => {
+          setMessagError("Erreur d'operation");
+          setIsError(true);
+          setPassword('');
+          console.log(err);
+        });
+    }
   };
 
   return (
@@ -95,26 +157,34 @@ const Envoi = ({navigation, route}) => {
           <View>
             <Text style={Styles.itemName}>Montants:</Text>
             <View style={Styles.itemNumber}>
+              <Text style={Styles.itemName}>{device}</Text>
+
               <TextInput
                 placeholder="ex: 100.00"
                 value={solde}
                 onChangeText={setSolde}
                 keyboardType="numeric"
               />
-              <Text style={Styles.itemName}>{device}</Text>
             </View>
           </View>
           {myModal()}
-          <TouchableOpacity
-            style={Styles.button}
-            onPress={() => setModalVisible(!modalVisible)}>
-            <Text style={Styles.buttonText}>Confirmer</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={Styles.buttonAnnuler}
-            onPress={() => navigation.push('Dashboard')}>
-            <Text style={Styles.buttonText}>Annuler</Text>
-          </TouchableOpacity>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : (
+            <View>
+              <TouchableOpacity
+                style={Styles.button}
+                onPress={() => sendTransaction()}>
+                <Text style={Styles.buttonText}>Confirmer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={Styles.buttonAnnuler}
+                onPress={() => navigation.push('Dashboard')}>
+                <Text style={Styles.buttonText}>Annuler</Text>
+              </TouchableOpacity>
+              <Text style={Styles.error}>{isError ? messagError : null}</Text>
+            </View>
+          )}
         </View>
       </View>
     </View>

@@ -140,5 +140,8 @@ const Styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  error: {
+    color: 'red',
+  },
 });
 export default Styles;
