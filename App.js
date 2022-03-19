@@ -23,14 +23,14 @@ const App = () => {
       <StatusBar hidden={true} />
       <Stack.Navigator>
         <Stack.Screen
-          name="Home"
-          component={Home}
+          name="Launch"
+          component={Launch}
           options={{headerShown: false}}
         />
 
         <Stack.Screen
-          name="Launch"
-          component={Launch}
+          name="Home"
+          component={Home}
           options={{headerShown: false}}
         />
 

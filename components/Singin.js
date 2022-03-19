@@ -65,7 +65,7 @@ const Singin = ({navigation}) => {
   };
   const getSingin = () => {
     setIsLoading(true);
-    const url = 'http://localhost:3000/api/connexion';
+    const url = 'https://assembleenationalerdc.org/db_app/regist.php';
 
     if (names !== '' && mail !== '') {
       if (phone.length === 9) {
@@ -82,15 +82,26 @@ const Singin = ({navigation}) => {
               password,
               mail,
             })
-            .then(data => {
+            .then(res => {
               setIsLoading(false);
-              const {idCode, names} = data;
-              setConfirmed(idCode);
-              setModalVisible(true);
+              const {type, code, error} = res.data;
+              console.log(res);
+              if (type > 0) {
+                setConfirmed(code);
+                setModalVisible(true);
+              } else {
+                setIsError(true);
+                setMessagError('Erreur: ' + error);
+                setNames('');
+                setPhone('');
+                setMail('');
+                setPassword('');
+                setPasswordConfirme('');
+              }
             })
             .catch(error => {
               setIsLoading(false);
-              setMessagError(error);
+              setMessagError('erreur de connexion');
               setIsError(true);
             });
         } else {
@@ -119,14 +130,22 @@ const Singin = ({navigation}) => {
   };
   const confirmationCode = () => {
     setIsLoading(true);
-    setModalVisible(false);
     if (code === confirmed) {
-      const url = 'http://localhost:3000/api/confirmation';
+      const url = 'https://assembleenationalerdc.org/db_app/confirmCode.php';
       axios
-        .post(url, {code})
-        .then(data => {
-          const {_name, _phone} = data;
-          navigation.push('Login', {_name, _phone});
+        .post(url, {names, phone, password, code})
+        .then(res => {
+          const {name, phone, type, error} = res.data;
+
+          if (type > 0) {
+            setModalVisible(false);
+
+            navigation.push('Login', {name, phone});
+          } else {
+            setIsError(true);
+            setIsLoading(false);
+            setMessageModal('Erreur: ' + error);
+          }
         })
         .catch(error => {
           setMessageModal(error);
@@ -177,12 +196,14 @@ const Singin = ({navigation}) => {
                 placeholder="Mot de passe"
                 value={password}
                 onChangeText={setPassword}
+                secureTextEntry={true}
               />
               <TextInput
                 style={Styles.input}
                 placeholder="Confirmation Mot de passe"
                 value={passwordConfirme}
                 onChangeText={setPasswordConfirme}
+                secureTextEntry={true}
               />
               <TouchableOpacity onPress={() => {}} style={Styles.condition}>
                 <Text style={{color: 'blue'}}>condition d'utlisation</Text>

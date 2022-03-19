@@ -25,8 +25,8 @@ const Dashboard = ({navigation, route}) => {
   const [usd, setUsd] = useState(0.0);
   const [cdf, setCdf] = useState(0.0);
   const [solde, setsolde] = useState(usd);
-  const [username, setUsername] = useState('') || route.params.name;
-  const [phone, setPhone] = useState('') || route.params.phone;
+  const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
   const [messagError, setMessageError] = useState('error');
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -41,6 +41,7 @@ const Dashboard = ({navigation, route}) => {
     ]);
     return true;
   };
+  console.log(route.params);
 
   useEffect(() => {
     const backAction = () => {

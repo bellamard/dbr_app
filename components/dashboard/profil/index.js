@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 
 import axios from 'axios';
@@ -24,6 +25,7 @@ const Profil = ({navigation, route}) => {
   const [passwordConfirmation, setPasswordconfirmation] = useState('');
   const [ModalVisible, setModalVisible] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [messagError, setMessagError] = useState('');
   const [isVisible, setIsVisible] = useState(true);
   const backAction = () => {
@@ -39,6 +41,23 @@ const Profil = ({navigation, route}) => {
   };
 
   const confirmationModifier = () => {
+    setIsLoading(true);
+    setIsError(false);
+    const url = 'http://localhost:3000/api/users/update';
+    axios
+      .post(url, {phone, passwordActuel, passwordNew})
+      .then(res => {
+        setIsLoading(false);
+        setModalVisible(false);
+        const message = res.data.message;
+        navigation.navigate('Confirmation', {username, phone, message});
+      })
+      .catch(err => {
+        console.log(err);
+        setIsLoading(false);
+        setIsError(true);
+        setMessagError('Erreur de modification');
+      });
     return '';
   };
   const myModal = () => {
@@ -62,7 +81,7 @@ const Profil = ({navigation, route}) => {
               <Text>Nouveau Mot de passe:</Text>
               <View style={Styles.inputPasswordVisibility}>
                 <TextInput
-                  placeholder="entre votre nouveau"
+                  placeholder="entrer nouveau"
                   value={passwordNew}
                   onChangeText={setPasswordNew}
                   secureTextEntry={isVisible}
@@ -74,7 +93,7 @@ const Profil = ({navigation, route}) => {
               <Text>confirmer Mot de passe:</Text>
               <View style={Styles.inputPasswordVisibility}>
                 <TextInput
-                  placeholder="Confirmer mot de passe"
+                  placeholder="entrer Confirmer "
                   value={passwordConfirmation}
                   onChangeText={setPasswordconfirmation}
                   secureTextEntry={isVisible}
@@ -84,17 +103,23 @@ const Profil = ({navigation, route}) => {
                 </TouchableOpacity>
               </View>
             </View>
-            <TouchableOpacity
-              style={Styles.button}
-              onPress={() => confirmationModifier()}>
-              <Text style={Styles.buttonText}>Valider</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={Styles.buttonAnnuler}
-              onPress={() => setModalVisible(!ModalVisible)}>
-              <Text style={Styles.buttonText}>Annuler</Text>
-            </TouchableOpacity>
-            <Text style={Styles.error}>{isError ? messagError : null}</Text>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+              <View>
+                <TouchableOpacity
+                  style={Styles.button}
+                  onPress={() => confirmationModifier()}>
+                  <Text style={Styles.buttonText}>Valider</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={Styles.buttonAnnuler}
+                  onPress={() => setModalVisible(!ModalVisible)}>
+                  <Text style={Styles.buttonText}>Annuler</Text>
+                </TouchableOpacity>
+                <Text style={Styles.error}>{isError ? messagError : null}</Text>
+              </View>
+            )}
           </View>
         </View>
       </Modal>
@@ -133,7 +158,7 @@ const Profil = ({navigation, route}) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={Styles.button}
-          onPress={() => navigation.push('login')}>
+          onPress={() => navigation.push('Login', {logout: true})}>
           <Text style={Styles.buttonText}>Se Déconnecter</Text>
         </TouchableOpacity>
         <TouchableOpacity

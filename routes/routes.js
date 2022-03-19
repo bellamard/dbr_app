@@ -6,6 +6,8 @@ import Envoi from '../components/dashboard/envoi';
 import Profil from '../components/dashboard/profil';
 import Achater from '../components/dashboard/achat';
 import Operation from '../components/dashboard/operation';
+
+import Login from '../components/Login';
 const Stack = createNativeStackNavigator();
 
 const RoutesDash = () => {
@@ -39,6 +41,11 @@ const RoutesDash = () => {
       <Stack.Screen
         name="Achater"
         component={Achater}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Login"
+        component={Login}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

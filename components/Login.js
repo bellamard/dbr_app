@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Text,
   View,
@@ -7,13 +7,16 @@ import {
   ActivityIndicator,
   Image,
   TextInput,
+  Alert,
+  BackHandler,
 } from 'react-native';
 import Styles from './style';
 import axios from 'axios';
 const back = require('../images/bg.jpg');
 const logos = require('../images/picture.png');
 
-const Login = ({navigation}) => {
+const Login = ({navigation, route}) => {
+  const [logout, setLogout] = useState(false);
   const [password, setPassword] = useState('');
   const [number, setNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,21 +25,21 @@ const Login = ({navigation}) => {
   const getconnexion = () => {
     setIsLoading(true);
     setIsError(false);
-    const url = 'https://localhost:5000';
+    const url = 'https://assembleenationalerdc.org/db_app/login.php';
     if (password.length >= 6) {
       if (number.length === 9) {
         axios
-          .post(url, {number, password})
-          .then(data => {
-            const {name, phone} = data;
-            if (data.length > 0) {
-              navigation.push('Dashboard', {name, phone});
+          .post(url, {code: number, pass: password})
+          .then(res => {
+            const {type, code, ident, msg, error} = res.data;
+            if (type > 0) {
+              navigation.push('Home', {ident, code});
               setIsLoading(false);
             } else {
               setPassword('');
               setNumber('');
               setIsLoading(false);
-              setMessageError('numéro ou le mot de passe incorrect');
+              setMessageError(error);
               setIsError(true);
             }
           })
@@ -61,6 +64,27 @@ const Login = ({navigation}) => {
       setIsError(true);
     }
   };
+
+  // useEffect(() => {
+  //   const backAction = () => {
+  //     Alert.alert('Quitter', 'Êtes-vous sûr de vouloir quitter ?', [
+  //       {
+  //         text: 'Cancel',
+  //         onPress: () => null,
+  //         style: 'cancel',
+  //       },
+  //       {text: 'YES', onPress: () => BackHandler.exitApp()},
+  //     ]);
+  //     return true;
+  //   };
+
+  // const backHandler = BackHandler.addEventListener(
+  //   'hardwareBackPress',
+  //   backAction,
+  // );
+
+  //   return () => backHandler.remove();
+  // }, []);
 
   return (
     <ImageBackground source={back} style={Styles.container}>
