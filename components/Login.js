@@ -10,6 +10,7 @@ import {
   Alert,
   BackHandler,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Styles from './style';
 import axios from 'axios';
 const back = require('../images/bg.jpg');
@@ -22,6 +23,16 @@ const Login = ({navigation, route}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [messageError, setMessageError] = useState('');
+
+  const saveUser = async value => {
+    try {
+      await AsyncStorage.setItem('user', JSON.stringify(value));
+    } catch (e) {
+      // saving error
+      console.log(e);
+    }
+  };
+
   const getconnexion = () => {
     setIsLoading(true);
     setIsError(false);
@@ -32,9 +43,12 @@ const Login = ({navigation, route}) => {
           .post(url, {code: number, pass: password})
           .then(res => {
             const {type, code, ident, msg, error} = res.data;
+            const mydata = {code, ident};
+
             if (type > 0) {
-              navigation.push('Home', {ident, code});
               setIsLoading(false);
+              saveUser(mydata);
+              navigation.push('Home');
             } else {
               setPassword('');
               setNumber('');
@@ -64,27 +78,6 @@ const Login = ({navigation, route}) => {
       setIsError(true);
     }
   };
-
-  // useEffect(() => {
-  //   const backAction = () => {
-  //     Alert.alert('Quitter', 'Êtes-vous sûr de vouloir quitter ?', [
-  //       {
-  //         text: 'Cancel',
-  //         onPress: () => null,
-  //         style: 'cancel',
-  //       },
-  //       {text: 'YES', onPress: () => BackHandler.exitApp()},
-  //     ]);
-  //     return true;
-  //   };
-
-  // const backHandler = BackHandler.addEventListener(
-  //   'hardwareBackPress',
-  //   backAction,
-  // );
-
-  //   return () => backHandler.remove();
-  // }, []);
 
   return (
     <ImageBackground source={back} style={Styles.container}>

@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import Styles from './style';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 const user = require('../../images/user.jpg');
 const quitter = require('../../images/quitter.png');
@@ -19,17 +20,42 @@ const rapport = require('../../images/rapport.png');
 const achat = require('../../images/achat.png');
 const profil = require('../../images/profil.png');
 const network = require('../../images/network.png');
+// const mySolde = async data => {
+//   setIsLoading(true);
+//   return axios
+//     .post('http://assembleenationalerdc.org/db_app/solde.php', {
+//       code: data,
+//     })
+//     .then(res => {
+//       setIsLoading(false);
+//       const {usd, cdf, type, error} = res.data;
+//       console.log(res);
+//       if (type > 0) {
+//         setUsd(usd);
+//         setCdf(cdf);
+//       } else {
+//         setMessageError(error);
+//         setIsError(true);
+//       }
+//     })
+//     .catch(error => {
+//       setIsLoading(false);
+//       setIsError(true);
+//       setMessageError('Erreur de connexion');
+//     });
+// };
 
 const Dashboard = ({navigation, route}) => {
   const [devices, setDevices] = useState('USD');
-  const [usd, setUsd] = useState(0.0);
-  const [cdf, setCdf] = useState(0.0);
+  const [usd, setUsd] = useState(23);
+  const [cdf, setCdf] = useState(12);
   const [solde, setsolde] = useState(usd);
   const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
-  const [messagError, setMessageError] = useState('error');
+  const [messagError, setMessageError] = useState('Erreur de connexion');
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
+
   const backAction = () => {
     Alert.alert('Quitter', 'Êtes-vous sûr de vouloir quitter ?', [
       {
@@ -41,9 +67,53 @@ const Dashboard = ({navigation, route}) => {
     ]);
     return true;
   };
-  console.log(route.params);
+
+  const setViewDevices = (device, compte) => {
+    setDevices(device);
+    setsolde(compte);
+  };
 
   useEffect(() => {
+    const getSolde = () => {
+      setIsLoading(true);
+      const getUser = async () => {
+        try {
+          const jsonValue = await AsyncStorage.getItem('user');
+          const {code, ident} = jsonValue ? JSON.parse(jsonValue) : {};
+          setPhone(code);
+          setUsername(ident);
+          return axios
+            .post('http://assembleenationalerdc.org/db_app/solde.php', {code})
+            .then(response => {
+              const {usd, cdf, type, error} = response.data;
+              setIsLoading(false);
+              if (type > 0) {
+                setCdf(cdf);
+                setUsd(usd);
+                if (devices === 'USD') {
+                  setsolde(usd);
+                } else {
+                  setsolde(cdf);
+                }
+              } else {
+                setIsError(true);
+                setMessageError(error);
+              }
+            })
+            .catch(error_1 => {
+              setIsError(true);
+              setMessageError('Erreur de connexion');
+            });
+        } catch (e) {
+          // error reading value
+          setIsLoading(false);
+          setIsError(true);
+          setMessageError('Erreur grave ressayer de vous connecter');
+        }
+      };
+      getUser();
+    };
+    getSolde();
     const backAction = () => {
       Alert.alert('Quitter', 'Êtes-vous sûr de vouloir quitter ?', [
         {
@@ -62,32 +132,7 @@ const Dashboard = ({navigation, route}) => {
     );
 
     return () => backHandler.remove();
-  }, []);
-
-  const setViewDevices = (device, compte) => {
-    setDevices(device);
-    setsolde(compte);
-  };
-
-  useEffect(() => {
-    const mySolde = () => {
-      setIsLoading(true);
-      return axios
-        .post('https://localhost:5000/solde/', {phone})
-        .then(data => {
-          setIsLoading(false);
-          const {_usd, _cdf} = data;
-          setUsd(_usd);
-          setCdf(_cdf);
-        })
-        .catch(error => {
-          setIsLoading(false);
-          setIsError(true);
-          setMessageError('Erreur de connexion');
-        });
-    };
-    mySolde();
-  }, [phone]);
+  }, [devices]);
 
   return (
     <View style={Styles.container}>
@@ -100,7 +145,7 @@ const Dashboard = ({navigation, route}) => {
       </View>
 
       <View style={Styles.layout}>
-        {!isError ? (
+        {isError ? (
           <View style={Styles.boxnetwork}>
             <Image style={Styles.network} source={network} />
             <Text>{messagError}</Text>
