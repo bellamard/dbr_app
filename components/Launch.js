@@ -18,11 +18,7 @@ const Launch = ({navigation}) => {
         <Text style={Styles.title2}>Money Transfert</Text>
         <View>
           <Text style={Styles.paragraph}>
-            La convergence n’est pas la divergence, la cosmogonisation. C’est à
-            dire quand on parle de ces rollers, mais oui avéré(e)(s). Comme la
-            coumbacérie ou le script de Aze, merci propre(s) aux congolais.
-            Quand on parle de relaxation, Bonne Année dans les camps militaires
-            non-voyants.
+            Votre argent mérite notre expertise.
           </Text>
           <TouchableOpacity
             onPress={() => {

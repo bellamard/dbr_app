@@ -113,5 +113,45 @@ const Styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  userValidator: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  messageValidator: {
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  messagesValidatorDescription: {
+    textAlign: 'center',
+    fontStyle: 'italic',
+    padding: 10,
+    backgroundColor: '#ff8',
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  userValidatorTitle: {
+    fontSize: 20,
+  },
+  buttonValidator: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 15,
+    borderWidth: 0.4,
+    borderColor: '#519',
+    borderRadius: 10,
+  },
+  layoutValidator: {
+    flex: 1,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: 'blue',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderTopEndRadius: 25,
+    borderTopStartRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 export default Styles;

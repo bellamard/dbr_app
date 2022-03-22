@@ -62,7 +62,7 @@ const Login = ({navigation, route}) => {
             setNumber('');
             setIsLoading(false);
             setIsError(true);
-            setMessageError(error);
+            setMessageError('Probleme de connexion');
           });
       } else {
         setMessageError('Numéro incorrect');

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Text,
   View,
@@ -8,18 +8,19 @@ import {
   Modal,
   ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Styles from './style';
 const user = require('../../../images/user.jpg');
 
 const Retrait = ({navigation, route}) => {
-  const [username, setUsername] = useState('user') || route.params.name;
-  const [phone, setPhone] = useState('089 XXX XXX XXX') || route.params.phone;
-  const [numberRecipient, setNumberRecipient] = useState('');
+  const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
+  const [agent, setAgent] = useState('');
   const [device, setDevice] = useState('USD');
   const [solde, setSolde] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-  const [recipientName, setRecipientName] = useState('');
+  const [total, setTotal] = useState('');
   const [costs, setCosts] = useState(0);
   const [password, setPassword] = useState('');
   const [messagError, setMessagError] = useState('');
@@ -32,11 +33,10 @@ const Retrait = ({navigation, route}) => {
           <View style={Styles.modalView}>
             <View style={Styles.boxConfirmation}>
               <Text>Client:{username}</Text>
-              <Text>Agent:{recipientName}</Text>
-              <Text>Numéro:{numberRecipient}</Text>
+              <Text>Numéro Agent:{agent}</Text>
               <Text>Prix:{solde}</Text>
               <Text>Frais:{costs}</Text>
-              <Text>Prix Total:{solde + costs}</Text>
+              <Text>Prix Total:{total}</Text>
               <TextInput
                 placeholder="entre votre code secret"
                 style={Styles.input}
@@ -45,17 +45,23 @@ const Retrait = ({navigation, route}) => {
                 secureTextEntry={true}
               />
             </View>
-            <TouchableOpacity
-              style={Styles.button}
-              onPress={() => confirmationTransaction()}>
-              <Text style={Styles.buttonText}>Valider</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={Styles.buttonAnnuler}
-              onPress={() => setModalVisible(!modalVisible)}>
-              <Text style={Styles.buttonText}>Annuler</Text>
-            </TouchableOpacity>
-            <Text style={Styles.error}>{isError ? messagError : null}</Text>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+              <View>
+                <TouchableOpacity
+                  style={Styles.button}
+                  onPress={() => confirmationTransaction()}>
+                  <Text style={Styles.buttonText}>Valider</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={Styles.buttonAnnuler}
+                  onPress={() => setModalVisible(!modalVisible)}>
+                  <Text style={Styles.buttonText}>Annuler</Text>
+                </TouchableOpacity>
+                <Text style={Styles.error}>{isError ? messagError : null}</Text>
+              </View>
+            )}
           </View>
         </View>
       </Modal>
@@ -64,53 +70,60 @@ const Retrait = ({navigation, route}) => {
 
   const sendTransaction = () => {
     setIsError(false);
-    if (numberRecipient.length != 9 && solde === '') {
+    if (agent.length !== 9 && solde === '') {
       setMessagError('Veuillez remplir correctement les champs');
       setIsError(true);
       setSolde('');
-      setNumberRecipient('');
+      setAgent('');
     } else {
       setIsLoading(true);
-      const url = 'http://localhost:3000/api/retrieve/send';
-      axios
-        .post(url, {phone, numberRecipient, device, solde})
-        .then(res => {
-          const {_recipientName, _costs} = res;
-          setRecipientName(_recipientName);
-          setCosts(_costs);
-          setModalVisible(true);
-          setIsLoading(false);
-        })
-        .catch(err => {
-          setIsLoading(false);
-          setIsError(true);
-          setMessagError("Erreur d'Operation");
-          setSolde('');
-          setNumberRecipient('');
-          console.log(err);
-        });
+      getOperation();
+    }
+  };
+  const saveMsg = async value => {
+    try {
+      await AsyncStorage.setItem('messageConfirmation', JSON.stringify(value));
+    } catch (e) {
+      // saving error
+      console.log(e);
     }
   };
   const confirmationTransaction = () => {
+    setIsLoading(true);
     setIsError(false);
     if (password.length === 0) {
       setMessagError('Veuillez remplir correctement les champs');
       setIsError(true);
       setPassword('');
     } else {
-      const url = 'http://localhost:3000/api/retrieve/confirm';
+      const url =
+        'http://assembleenationalerdc.org/db_app/confirmtransfert.php';
       axios
-        .post(url, {phone, password, numberRecipient, device, solde, costs})
+        .post(url, {
+          code: phone,
+          password,
+          agent,
+          devise: device,
+          prix: solde,
+          frais: costs,
+          total,
+        })
         .then(res => {
-          navigation.push('confirmation', {
-            recipientName,
-            solde,
-            costs,
-            numberRecipient,
-          });
-          setModalVisible(false);
+          const {type, msg, error} = res.data;
+          console.log(res);
+          setIsLoading(false);
+          if (type === '1') {
+            setModalVisible(false);
+            saveMsg({message: msg, exped: agent});
+            navigation.navigate('Confirmation');
+          } else {
+            setMessagError(error);
+            setIsError(true);
+            setPassword('');
+          }
         })
         .catch(err => {
+          setIsLoading(false);
           setMessagError("Erreur d'operation");
           setIsError(true);
           setPassword('');
@@ -118,7 +131,51 @@ const Retrait = ({navigation, route}) => {
         });
     }
   };
-
+  const getOperation = () => {
+    return axios
+      .post('http://assembleenationalerdc.org/db_app/transfert.php', {
+        code: phone,
+        devise: device,
+        price: solde,
+        agent,
+      })
+      .then(res => {
+        setIsLoading(false);
+        const {type, frais, total, error} = res.data;
+        if (type === '1') {
+          setCosts(frais);
+          setTotal(total);
+          setModalVisible(true);
+        } else {
+          setIsError(true);
+          setMessagError(error);
+        }
+      })
+      .catch(err => {
+        setIsLoading(false);
+        setIsError(true);
+        setMessagError("Erreur d'operation! probleme de connexion");
+        console.log(err);
+      });
+  };
+  useEffect(() => {
+    const getUser = async () => {
+      setIsLoading(true);
+      try {
+        const jsonValue = await AsyncStorage.getItem('user');
+        const {code, ident} = jsonValue ? JSON.parse(jsonValue) : {};
+        setPhone(code);
+        setUsername(ident);
+        setIsLoading(false);
+      } catch (e) {
+        // error reading value
+        setIsLoading(false);
+        setIsError(true);
+        setMessagError('Erreur grave ressayer de vous connecter');
+      }
+    };
+    getUser();
+  }, []);
   return (
     <View style={Styles.container}>
       <View style={Styles.boxUser}>
@@ -136,8 +193,8 @@ const Retrait = ({navigation, route}) => {
             <Text>+243</Text>
             <TextInput
               placeholder="ex: 89 000 0000"
-              value={numberRecipient}
-              onChangeText={setNumberRecipient}
+              value={agent}
+              onChangeText={setAgent}
               keyboardType="numeric"
             />
           </View>
