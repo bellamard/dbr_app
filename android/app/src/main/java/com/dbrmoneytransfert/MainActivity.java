@@ -1,11 +1,12 @@
-package com.dbrmoneytransfert;
+package com.b2la.dbrmoneytransfert;
 
 import com.facebook.react.ReactActivity;
 
 public class MainActivity extends ReactActivity {
 
   /**
-   * Returns the name of the main component registered from JavaScript. This is used to schedule
+   * Returns the name of the main component registered from JavaScript. This is
+   * used to schedule
    * rendering of the component.
    */
   @Override

@@ -13,6 +13,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Launch from './components/Launch';
 import Singin from './components/Singin';
 import Login from './components/Login';
+import Motpasse from './components/Motpasse';
 import Home from './routes/routes';
 
 const Stack = createNativeStackNavigator();
@@ -42,6 +43,11 @@ const App = () => {
         <Stack.Screen
           name="Singin"
           component={Singin}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="motpasse"
+          component={Motpasse}
           options={{headerShown: false}}
         />
       </Stack.Navigator>

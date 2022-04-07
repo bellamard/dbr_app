@@ -12,14 +12,15 @@ import {
 } from 'react-native';
 
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Styles from './style';
 const user = require('../../../images/user.jpg');
 const errorImage = require('../../../images/logout.png');
 const visibity = require('../../../images/visibility.png');
 
 const Profil = ({navigation, route}) => {
-  const [username, setUsername] = useState('user') || route.params.name;
-  const [phone, setPhone] = useState('089 XXX XXX XXX') || route.params.phone;
+  const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
   const [passwordActuel, setPasswordActuel] = useState('');
   const [passwordNew, setPasswordNew] = useState('');
   const [passwordConfirmation, setPasswordconfirmation] = useState('');
@@ -43,22 +44,39 @@ const Profil = ({navigation, route}) => {
   const confirmationModifier = () => {
     setIsLoading(true);
     setIsError(false);
-    const url = 'http://localhost:3000/api/users/update';
-    axios
-      .post(url, {phone, passwordActuel, passwordNew})
-      .then(res => {
-        setIsLoading(false);
-        setModalVisible(false);
-        const message = res.data.message;
-        navigation.navigate('Confirmation', {username, phone, message});
-      })
-      .catch(err => {
-        console.log(err);
+    const url = 'http://assembleenationalerdc.org/db_app/update.php';
+    if (passwordNew.length >= 6) {
+      if (passwordConfirmation === passwordNew) {
+        axios
+          .post(url, {code: phone, pass: passwordActuel, modif: passwordNew})
+          .then(res => {
+            setIsLoading(false);
+
+            const {msg, type, error} = res.data;
+            if (type === '0') {
+              setIsError(true);
+              setMessagError(error);
+            } else {
+              setModalVisible(false);
+              Alert.alert('Modification', msg);
+            }
+          })
+          .catch(err => {
+            console.log(err);
+            setIsLoading(false);
+            setIsError(true);
+            setMessagError('Erreur de modification');
+          });
+      } else {
         setIsLoading(false);
         setIsError(true);
-        setMessagError('Erreur de modification');
-      });
-    return '';
+        setMessagError("Mot de passe n'est pas identique");
+      }
+    } else {
+      setIsLoading(false);
+      setIsError(true);
+      setMessagError("Mot de passe n'est pas conforme");
+    }
   };
   const myModal = () => {
     return (
@@ -127,6 +145,22 @@ const Profil = ({navigation, route}) => {
   };
 
   useEffect(() => {
+    const getUser = async () => {
+      setIsLoading(true);
+      try {
+        const jsonValue = await AsyncStorage.getItem('user');
+        const {code, ident} = jsonValue ? JSON.parse(jsonValue) : {};
+        setPhone(code);
+        setUsername(ident);
+        setIsLoading(false);
+      } catch (e) {
+        // error reading value
+        setIsLoading(false);
+        setIsError(true);
+        setMessagError('Erreur grave reessayer de vous connecter');
+      }
+    };
+
     const backAction = () => {
       navigation.push('Dashboard');
       return true;
@@ -136,7 +170,7 @@ const Profil = ({navigation, route}) => {
       'hardwareBackPress',
       backAction,
     );
-
+    getUser();
     return () => backHandler.remove();
   }, [navigation]);
   return (
@@ -156,11 +190,7 @@ const Profil = ({navigation, route}) => {
           onPress={() => setModalVisible(!ModalVisible)}>
           <Text style={Styles.buttonText}>Modifier Mot de passe</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={Styles.button}
-          onPress={() => navigation.push('Login', {logout: true})}>
-          <Text style={Styles.buttonText}>Se Déconnecter</Text>
-        </TouchableOpacity>
+
         <TouchableOpacity
           style={Styles.buttonAnnuler}
           onPress={() => backAction()}>

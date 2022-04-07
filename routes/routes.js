@@ -49,6 +49,7 @@ const RoutesDash = () => {
         component={Login}
         options={{headerShown: false}}
       />
+
       <Stack.Screen
         name="Confirmation"
         component={Confirmation}

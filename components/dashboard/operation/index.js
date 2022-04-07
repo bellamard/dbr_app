@@ -12,84 +12,75 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import Styles from './style';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const user = require('../../../images/user.jpg');
 const errorImage = require('../../../images/logout.png');
 
-const Item = ({name, type, date}) => {
+const Item = ({recipient, description, date}) => {
   return (
     <View>
       <View style={Styles.itembox}>
         <Image source={user} style={Styles.itemboxTitleImage} />
-        <Text style={Styles.itemtitle}>{name}</Text>
+        <Text style={Styles.itemtitle}>{recipient}</Text>
       </View>
       <View style={Styles.itemboxInfos}>
-        <Text style={Styles.itemDescription}>{type}</Text>
+        <Text style={Styles.itemDescription}>{description}</Text>
         <Text>{date}</Text>
       </View>
     </View>
   );
 };
 const Operation = ({navigation, route}) => {
-  const [username, setUsername] = useState('user') || route.params.name;
-  const [phone, setPhone] = useState('089 XXX XXX XXX') || route.params.phone;
+  const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [messageError, setMessageError] = useState('');
-  const [transactions, setTransactions] = useState([
-    // {
-    //   id: 1,
-    //   user: 895127236,
-    //   username: 'bellamard',
-    //   type: 'Rétrait',
-    //   solde: 100,
-    //   device: 'USD',
-    //   date: '2020-02-08',
-    // },
-    // {
-    //   id: 2,
-    //   user: 895127236,
-    //   username: 'b2la',
-    //   type: 'Rétrait',
-    //   solde: 100,
-    //   device: 'USD',
-    //   date: '2020-02-08',
-    // },
-    // {
-    //   id: 3,
-    //   user: 895127236,
-    //   username: 'b2la',
-    //   type: 'Rétrait',
-    //   solde: 100,
-    //   device: 'USD',
-    //   date: '2020-02-08',
-    // },
-    // {
-    //   id: 4,
-    //   user: 895127236,
-    //   username: 'b2la',
-    //   type: 'Rétrait',
-    //   solde: 100,
-    //   device: 'USD',
-    //   date: '2020-02-08',
-    // },
-  ]);
+  const [transactions, setTransactions] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    const receiveTransaction = () => {
-      const url = 'http://localhost:3000/api/transaction/';
-      axios
-        .post(url, {phone})
-        .then(res => {
-          setIsLoading(false);
-          setTransactions(res);
-        })
-        .catch(error => {
-          setIsLoading(false);
-          setIsError(true);
-          setMessageError('Pas des Transaction');
-        });
+    const getUser = async () => {
+      setIsLoading(true);
+      try {
+        const jsonValue = await AsyncStorage.getItem('user');
+        const {code, ident} = jsonValue ? JSON.parse(jsonValue) : {};
+        setPhone(code);
+        setUsername(ident);
+
+        const receiveTransaction = () => {
+          const url = 'http://assembleenationalerdc.org/db_app/Operation.php';
+          axios
+            .post(url, {code})
+            .then(res => {
+              const {type, error, operations} = res.data;
+
+              if (type === '0') {
+                setIsError(true);
+                setMessageError(error);
+              } else {
+                setTransactions(operations);
+
+                console.log(operations);
+              }
+            })
+            .catch(error => {
+              setIsError(true);
+              setMessageError('Erreur de connexion');
+            });
+        };
+        receiveTransaction();
+        setIsLoading(false);
+      } catch (e) {
+        // error reading value
+        setIsLoading(false);
+        setIsError(true);
+        setMessageError('Erreur grave reessayer de vous connecter');
+      }
     };
+
+    getUser();
+
     const backAction = () => {
       navigation.push('Dashboard');
       return true;
@@ -99,7 +90,6 @@ const Operation = ({navigation, route}) => {
       'hardwareBackPress',
       backAction,
     );
-    receiveTransaction();
     return () => backHandler.remove();
   }, [navigation, phone]);
   const myModal = item => {
@@ -108,12 +98,10 @@ const Operation = ({navigation, route}) => {
         <View style={Styles.centeredView}>
           <View style={Styles.modalView}>
             <View style={Styles.boxConfirmation}>
-              <Text style={Styles.itemtitle}>RE:{item.username}</Text>
-              <Text style={Styles.itemtitle}>Phone:{item.user}</Text>
-              <Text style={Styles.itemDescription}>
-                Montant:{item.solde} {item.device}
+              <Text style={Styles.itemtitle}>
+                Phone:{item.exped === phone ? item.destin : item.exped}
               </Text>
-              <Text style={Styles.itemType}>Type:{item.type}</Text>
+              <Text style={Styles.itemDescription}>{item.msg}</Text>
               <Text style={Styles.itemtitle}>Date:{item.date}</Text>
             </View>
 
@@ -130,10 +118,14 @@ const Operation = ({navigation, route}) => {
   const renderItem = ({item}) => {
     return (
       <View>
-        {myModal(item)}
-        <TouchableOpacity onPress={() => setModalVisible(!modalVisible)}>
-          <Item name={item.username} type={item.type} date={item.date} />
-        </TouchableOpacity>
+        {/* {myModal(item)}
+        <TouchableOpacity onPress={() => setModalVisible(!modalVisible)}> */}
+        <Item
+          description={item.msg}
+          recipient={item.exped === phone ? item.destin : item.exped}
+          date={item.date}
+        />
+        {/* </TouchableOpacity> */}
       </View>
     );
   };
@@ -148,13 +140,16 @@ const Operation = ({navigation, route}) => {
       />
     </View>
   );
-  const messageView = () => (
-    <View style={Styles.boxError}>
-      <Image source={errorImage} style={Styles.imageError} />
-      <Text style={Styles.error}>{messageError}</Text>
-    </View>
-  );
-
+  const messageView = () => {
+    return isError ? (
+      <View style={Styles.boxError}>
+        <Image source={errorImage} style={Styles.imageError} />
+        <Text style={Styles.error}>{messageError}</Text>
+      </View>
+    ) : (
+      panel()
+    );
+  };
   return (
     <View style={Styles.container}>
       <View style={Styles.boxUser}>
@@ -167,10 +162,8 @@ const Operation = ({navigation, route}) => {
       <View style={Styles.body}>
         {isLoading ? (
           <ActivityIndicator size="large" color="#0000ff" />
-        ) : isError ? (
-          messageView()
         ) : (
-          panel()
+          messageView()
         )}
       </View>
     </View>

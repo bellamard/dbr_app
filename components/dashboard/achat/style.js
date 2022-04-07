@@ -114,5 +114,28 @@ const Styles = StyleSheet.create({
   boxConfirmation: {
     width: '100%',
   },
+
+  devise: {
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    textAlign: 'center',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 35,
+    marginHorizontal: 2.5,
+    borderColor: '#519',
+  },
+  deviseTitle: {
+    color: '#519',
+    fontSize: 10,
+  },
+  itemDevices: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  error: {
+    color: 'red',
+  },
 });
 export default Styles;
