@@ -46,10 +46,8 @@ const network = require('../../images/network.png');
 // };
 
 const Dashboard = ({navigation, route}) => {
-  const [devices, setDevices] = useState('USD');
-  const [usd, setUsd] = useState(23);
-  const [cdf, setCdf] = useState(12);
-  const [solde, setsolde] = useState(usd);
+  const [soldeUsd, setUsd] = useState(0);
+  const [soldeCdf, setCdf] = useState(0);
   const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [messagError, setMessageError] = useState('Erreur de connexion');
@@ -68,52 +66,62 @@ const Dashboard = ({navigation, route}) => {
     return true;
   };
 
-  const setViewDevices = (device, compte) => {
-    setDevices(device);
-    setsolde(compte);
+  const saveUser = async value => {
+    try {
+      await AsyncStorage.setItem('user', JSON.stringify(value));
+    } catch (e) {
+      // saving error
+      console.log(e);
+    }
   };
 
-  useEffect(() => {
-    const getSolde = () => {
-      setIsLoading(true);
-      const getUser = async () => {
-        try {
-          const jsonValue = await AsyncStorage.getItem('user');
-          const {code, ident} = jsonValue ? JSON.parse(jsonValue) : {};
-          setPhone(code);
-          setUsername(ident);
-          return axios
-            .post('http://assembleenationalerdc.org/db_app/solde.php', {code})
-            .then(response => {
-              const {usd, cdf, type, error} = response.data;
-              setIsLoading(false);
-              if (type > 0) {
-                setCdf(cdf);
-                setUsd(usd);
-                if (devices === 'USD') {
-                  setsolde(usd);
-                } else {
-                  setsolde(cdf);
-                }
-              } else {
-                setIsError(true);
-                setMessageError(error);
-              }
-            })
-            .catch(error_1 => {
-              setIsError(true);
-              setMessageError('Erreur de connexion');
-            });
-        } catch (e) {
-          // error reading value
-          setIsLoading(false);
+  const getSolde = async () => {
+    setIsLoading(true);
+    const url = 'https://assembleenationalerdc.org/db_app/solde.php';
+    return axios
+      .post(url, {code: phone})
+      .then(response => {
+        setIsLoading(false);
+        const {usd, cdf, type, error} = response.data;
+        if (type > 0) {
+          setCdf(cdf);
+          setUsd(usd);
+          saveUser({
+            code: phone,
+            ident: username,
+            usd: soldeUsd,
+            cdf: soldeCdf,
+          });
+        } else {
           setIsError(true);
-          setMessageError('Erreur grave ressayer de vous connecter');
+          setMessageError(error);
         }
-      };
-      getUser();
+      })
+      .catch(error => {
+        setIsLoading(false);
+        setIsError(true);
+        setMessageError('Erreur de connexion');
+      });
+  };
+  useEffect(() => {
+    const getUser = async () => {
+      setIsLoading(true);
+      try {
+        const jsonValue = await AsyncStorage.getItem('user');
+        const {code, ident, usd, cdf} = jsonValue ? JSON.parse(jsonValue) : {};
+        setPhone(code);
+        setUsername(ident);
+        setUsd(usd);
+        setCdf(cdf);
+      } catch (e) {
+        // error reading value
+
+        setIsError(true);
+        setMessageError('Erreur grave ressayer de vous connecter');
+      }
+      setIsLoading(false);
     };
-    getSolde();
+    getUser();
     const backAction = () => {
       Alert.alert('Quitter', 'Êtes-vous sûr de vouloir quitter ?', [
         {
@@ -132,7 +140,7 @@ const Dashboard = ({navigation, route}) => {
     );
 
     return () => backHandler.remove();
-  }, [devices]);
+  }, []);
 
   return (
     <View style={Styles.container}>
@@ -149,6 +157,9 @@ const Dashboard = ({navigation, route}) => {
           <View style={Styles.boxnetwork}>
             <Image style={Styles.network} source={network} />
             <Text>{messagError}</Text>
+            <TouchableOpacity style={Styles.devise} onPress={() => getSolde()}>
+              <Text style={Styles.deviseText}>Réessayer</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <ScrollView>
@@ -156,28 +167,26 @@ const Dashboard = ({navigation, route}) => {
               <ActivityIndicator size="large" color="#0000ff" />
             ) : (
               <View>
-                <View style={Styles.layoutSold}>
-                  <Text style={Styles.soldeTitle}>Soldes:</Text>
-                  <View style={Styles.boxSold}>
-                    <View>
-                      <TouchableOpacity
-                        style={Styles.devise}
-                        onPress={() => setViewDevices('CDF', cdf)}>
-                        <Text style={Styles.deviseTitle}>CDF</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={Styles.devise}
-                        onPress={() => setViewDevices('USD', usd)}>
-                        <Text style={Styles.deviseTitle}>USD</Text>
-                      </TouchableOpacity>
-                    </View>
-                    <View style={Styles.soldeInfos}>
-                      <Text style={Styles.deviseTitle}>SOLDE:</Text>
-                      <Text>{solde}</Text>
-                      <Text>{devices}</Text>
+                <TouchableOpacity onPress={() => getSolde()}>
+                  <View style={Styles.layoutSold}>
+                    <Text style={Styles.soldeTitle}>Soldes:</Text>
+                    <View style={Styles.boxSold}>
+                      <View style={Styles.soldeInfos}>
+                        <Text style={Styles.deviseTitle}>SOLDE:</Text>
+                        <View style={Styles.dashSoldes}>
+                          <View style={Styles.dashSolde}>
+                            <Text style={Styles.counter}>{soldeUsd}</Text>
+                            <Text style={Styles.titleCounter}>USD</Text>
+                          </View>
+                          <View style={(Styles.dashSolde, Styles.separator)}>
+                            <Text style={Styles.counter}>{soldeCdf}</Text>
+                            <Text style={Styles.titleCounter}>CDF</Text>
+                          </View>
+                        </View>
+                      </View>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
 
                 <View style={Styles.layoutSold}>
                   <Text style={Styles.soldeTitle}>Opération</Text>

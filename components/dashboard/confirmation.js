@@ -8,6 +8,7 @@ const user = require('../../images/user.jpg');
 const Confirmation = ({navigation, route}) => {
   const [exped, setExped] = useState('');
   const [message, setMessage] = useState('');
+  const [myIdent, setMyIdent] = useState({});
   const getMessage = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem('messageConfirmation');
@@ -18,6 +19,7 @@ const Confirmation = ({navigation, route}) => {
       // error reading value
     }
   };
+
   getMessage();
   return (
     <View style={Styles.container}>

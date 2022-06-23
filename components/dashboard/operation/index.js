@@ -21,11 +21,11 @@ const Item = ({recipient, description, date}) => {
     <View>
       <View style={Styles.itembox}>
         <Image source={user} style={Styles.itemboxTitleImage} />
-        <Text style={Styles.itemtitle}>{recipient}</Text>
+        <Text style={Styles.itemtitle}>+243 {recipient}</Text>
       </View>
       <View style={Styles.itemboxInfos}>
-        <Text style={Styles.itemDescription}>{description}</Text>
-        <Text>{date}</Text>
+        <Text>{description}</Text>
+        <Text style={Styles.itemDescription}>{date}</Text>
       </View>
     </View>
   );
@@ -49,7 +49,7 @@ const Operation = ({navigation, route}) => {
         setUsername(ident);
 
         const receiveTransaction = () => {
-          const url = 'http://assembleenationalerdc.org/db_app/Operation.php';
+          const url = 'https://assembleenationalerdc.org/db_app/Operation.php';
           axios
             .post(url, {code})
             .then(res => {
@@ -92,6 +92,11 @@ const Operation = ({navigation, route}) => {
     );
     return () => backHandler.remove();
   }, [navigation, phone]);
+
+  const backHome = () => {
+    navigation.push('Dashboard');
+    return true;
+  };
   const myModal = item => {
     return (
       <Modal animationType="slide" transparent={true} visible={modalVisible}>
@@ -145,6 +150,11 @@ const Operation = ({navigation, route}) => {
       <View style={Styles.boxError}>
         <Image source={errorImage} style={Styles.imageError} />
         <Text style={Styles.error}>{messageError}</Text>
+        <TouchableOpacity
+          onPress={() => backHome()}
+          style={Styles.itemboxInfos}>
+          <Text>Accueil</Text>
+        </TouchableOpacity>
       </View>
     ) : (
       panel()

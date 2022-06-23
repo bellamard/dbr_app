@@ -40,7 +40,7 @@ const Styles = StyleSheet.create({
     borderTopStartRadius: 25,
   },
   layoutSold: {
-    paddingVertical: 20,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderColor: '#519',
     alignItems: 'center',
@@ -50,6 +50,30 @@ const Styles = StyleSheet.create({
     justifyContent: 'space-around',
     width: '100%',
   },
+  dashSoldes: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  counter: {
+    fontWeight: 'bold',
+    color: 'black',
+    fontSize: 16,
+  },
+  titleCounter: {
+    color: '#3399FF',
+  },
+  dashSolde: {
+    padding: 15,
+    alignItems: 'center',
+  },
+  separator: {
+    borderLeftWidth: 1,
+    justifyContent: 'center',
+    paddingStart: 2,
+    alignItems: 'center',
+  },
+
   boxOperation: {
     flexDirection: 'row',
     justifyContent: 'space-around',

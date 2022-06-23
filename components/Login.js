@@ -42,13 +42,14 @@ const Login = ({navigation, route}) => {
         axios
           .post(url, {code: number, pass: password})
           .then(res => {
-            const {type, code, ident, msg, error} = res.data;
-            const mydata = {code, ident};
+            const {type, code, ident, msg, usd, cdf, error} = res.data;
+            const mydata = {code, ident, usd, cdf};
 
             if (type > 0) {
               setIsLoading(false);
               saveUser(mydata);
-              navigation.push('Home');
+              navigation.push('Home', mydata);
+              console.log(mydata);
             } else {
               setPassword('');
               setNumber('');

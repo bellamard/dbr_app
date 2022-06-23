@@ -88,6 +88,43 @@ const Retrait = ({navigation, route}) => {
       console.log(e);
     }
   };
+
+  const saveUser = async value => {
+    try {
+      await AsyncStorage.setItem('user', JSON.stringify(value));
+    } catch (e) {
+      // saving error
+      console.log(e);
+    }
+  };
+
+  const getSolde = async () => {
+    setIsLoading(true);
+    const url = 'https://assembleenationalerdc.org/db_app/solde.php';
+    return axios
+      .post(url, {code: phone})
+      .then(response => {
+        setIsLoading(false);
+        const {usd, cdf, type, error} = response.data;
+        if (type > 0) {
+          saveUser({
+            code: phone,
+            ident: username,
+            usd,
+            cdf,
+          });
+        } else {
+          setIsError(true);
+          setMessagError(error);
+        }
+      })
+      .catch(error => {
+        setIsLoading(false);
+        setIsError(true);
+        setMessagError('Erreur de connexion  lors de la vérification du solde');
+      });
+  };
+
   const confirmationTransaction = () => {
     setIsLoading(true);
     setIsError(false);
@@ -97,7 +134,7 @@ const Retrait = ({navigation, route}) => {
       setPassword('');
     } else {
       const url =
-        'http://assembleenationalerdc.org/db_app/confirmtransfert.php';
+        'https://assembleenationalerdc.org/db_app/confirmtransfert.php';
       axios
         .post(url, {
           code: phone,
@@ -113,6 +150,7 @@ const Retrait = ({navigation, route}) => {
           console.log(res);
           setIsLoading(false);
           if (type === '1') {
+            getSolde();
             setModalVisible(false);
             saveMsg({message: msg, exped: agent});
             navigation.navigate('Confirmation');

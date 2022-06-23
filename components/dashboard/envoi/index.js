@@ -88,6 +88,43 @@ const Envoi = ({navigation, route}) => {
       console.log(e);
     }
   };
+
+  const saveUser = async value => {
+    try {
+      await AsyncStorage.setItem('user', JSON.stringify(value));
+    } catch (e) {
+      // saving error
+      console.log(e);
+    }
+  };
+
+  const getSolde = async () => {
+    setIsLoading(true);
+    const url = 'https://assembleenationalerdc.org/db_app/solde.php';
+    return axios
+      .post(url, {code: phone})
+      .then(response => {
+        setIsLoading(false);
+        const {usd, cdf, type, error} = response.data;
+        if (type > 0) {
+          saveUser({
+            code: phone,
+            ident: username,
+            usd,
+            cdf,
+          });
+        } else {
+          setIsError(true);
+          setMessagError(error);
+        }
+      })
+      .catch(error => {
+        setIsLoading(false);
+        setIsError(true);
+        setMessagError('Erreur de connexion  lors de la vérification du solde');
+      });
+  };
+
   const confirmationTransaction = () => {
     setIsLoading(true);
     setIsError(false);
@@ -96,7 +133,7 @@ const Envoi = ({navigation, route}) => {
       setIsError(true);
       setPassword('');
     } else {
-      const url = 'http://assembleenationalerdc.org/db_app/confirmEnvoi.php';
+      const url = 'https://assembleenationalerdc.org/db_app/confirmEnvoi.php';
       axios
         .post(url, {
           code: phone,
@@ -112,6 +149,7 @@ const Envoi = ({navigation, route}) => {
           console.log(res);
           setIsLoading(false);
           if (type === '1') {
+            getSolde();
             setModalVisible(false);
             saveMsg({message: msg, exped: numberRecipient});
             navigation.navigate('Confirmation');
@@ -132,7 +170,7 @@ const Envoi = ({navigation, route}) => {
   };
   const getOperation = () => {
     return axios
-      .post('http://assembleenationalerdc.org/db_app/transfertEnvoi.php', {
+      .post('https://assembleenationalerdc.org/db_app/transfertEnvoi.php', {
         code: phone,
         devise: device,
         price: solde,

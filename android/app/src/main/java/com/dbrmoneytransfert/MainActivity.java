@@ -1,4 +1,4 @@
-package com.b2la.dbrmoneytransfert;
+package com.dbrmoneytransfert;
 
 import com.facebook.react.ReactActivity;
 

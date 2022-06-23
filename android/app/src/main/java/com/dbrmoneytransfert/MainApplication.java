@@ -1,4 +1,4 @@
-package com.b2la.dbrmoneytransfert;
+package com.dbrmoneytransfert;
 
 import android.app.Application;
 import android.content.Context;

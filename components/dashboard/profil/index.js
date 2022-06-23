@@ -44,7 +44,7 @@ const Profil = ({navigation, route}) => {
   const confirmationModifier = () => {
     setIsLoading(true);
     setIsError(false);
-    const url = 'http://assembleenationalerdc.org/db_app/update.php';
+    const url = 'https://assembleenationalerdc.org/db_app/update.php';
     if (passwordNew.length >= 6) {
       if (passwordConfirmation === passwordNew) {
         axios

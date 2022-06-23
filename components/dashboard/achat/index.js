@@ -79,6 +79,42 @@ const Achat = ({navigation, route}) => {
     }
   };
 
+  const saveUser = async value => {
+    try {
+      await AsyncStorage.setItem('user', JSON.stringify(value));
+    } catch (e) {
+      // saving error
+      console.log(e);
+    }
+  };
+
+  const getSolde = async () => {
+    setIsLoading(true);
+    const url = 'https://assembleenationalerdc.org/db_app/solde.php';
+    return axios
+      .post(url, {code: phone})
+      .then(response => {
+        setIsLoading(false);
+        const {usd, cdf, type, error} = response.data;
+        if (type > 0) {
+          saveUser({
+            code: phone,
+            ident: username,
+            usd,
+            cdf,
+          });
+        } else {
+          setIsError(true);
+          setMessagError(error);
+        }
+      })
+      .catch(error => {
+        setIsLoading(false);
+        setIsError(true);
+        setMessagError('Erreur de connexion  lors de la vérification du solde');
+      });
+  };
+
   const confirmationAchat = () => {
     setIsLoading(true);
     setIsError(false);
@@ -87,7 +123,7 @@ const Achat = ({navigation, route}) => {
       setIsError(true);
       setPassword('');
     } else {
-      const url = 'http://assembleenationalerdc.org/db_app/confirmAchat.php';
+      const url = 'https://assembleenationalerdc.org/db_app/confirmAchat.php';
       axios
         .post(url, {
           code: phone,
@@ -103,6 +139,7 @@ const Achat = ({navigation, route}) => {
           console.log(res);
           setIsLoading(false);
           if (type === '1') {
+            getSolde();
             setModalVisible(false);
             saveMsg({message: msg, exped: numberShop});
             navigation.navigate('Confirmation');
@@ -125,7 +162,7 @@ const Achat = ({navigation, route}) => {
   const onlineAchat = () => {
     setIsLoading(true);
     setIsError(false);
-    const url = 'http://assembleenationalerdc.org/db_app/achat.php';
+    const url = 'https://assembleenationalerdc.org/db_app/achat.php';
     axios
       .post(url, {code: phone, numberShop, numberArticle, device})
       .then(res => {

@@ -163,12 +163,12 @@ const Styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   itemtitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#519',
   },
   itemDescription: {
-    fontSize: 26,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#519',
   },
